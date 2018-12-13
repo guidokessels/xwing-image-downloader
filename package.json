@@ -1,0 +1,17 @@
+{
+  "name": "xwing-image-downloader",
+  "version": "1.0.0",
+  "description": "Downloads images from FFG's api",
+  "main": "index.js",
+  "author": "Guido Kessels <guidokessels@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "image-downloader": "^3.4.2",
+    "node-fetch": "^2.3.0",
+    "puppeteer": "^1.11.0"
+  }
+}
