@@ -15,7 +15,7 @@ const fetchJSON = async url => {
 };
 
 const downloadImage = async (url, dest) => {
-  log(`💾  ${chalk.blue(url)} ➡ ${chalk.green(dest)}`);
+  log(`Downloading ${chalk.blue(url)} => ${chalk.green(dest)}`);
   return await download.image({ url, dest });
 };
 
