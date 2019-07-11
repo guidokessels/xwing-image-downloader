@@ -7,6 +7,7 @@ const CARDS_API = `https://squadbuilder.fantasyflightgames.com/api/cards/`;
 const FFG_ID_MAP = `https://raw.githubusercontent.com/guidokessels/xwing-data2/master/data/ffg-xws.json`;
 const IMAGES_FOLDER = `${__dirname}/images`;
 const CHUNK_SIZE = 10;
+const DUAL_CARD_SUFFIX = "-sideb";
 
 const fetchJSON = async url => {
   log(`Fetching JSON from ${url}`);
@@ -29,7 +30,14 @@ const str2filename = str =>
 
 const getChunks = arr => arr.splice(0, CHUNK_SIZE);
 
-const processCards = async (chunks, results, remaining, ffgXwsMap, missing) => {
+const processCards = async (
+  chunks,
+  results,
+  remaining,
+  ffgXwsMap,
+  missing,
+  processed = []
+) => {
   const curr = await Promise.all(
     chunks
       .filter(card => card.card_image)
@@ -50,8 +58,17 @@ const processCards = async (chunks, results, remaining, ffgXwsMap, missing) => {
           return acc;
         }
 
-        const filename = `${xws}.png`;
-        path.push(filename);
+        let processedKey = `${card.card_type_id}-${xws}`;
+        let imageName = xws;
+        if (processed.indexOf(processedKey) > -1) {
+          console.log(
+            chalk.yellow(`Found second side for card with xws "${xws}"`)
+          );
+          processedKey += DUAL_CARD_SUFFIX;
+          imageName += DUAL_CARD_SUFFIX;
+        }
+        processed.push(processedKey);
+        path.push(`${imageName}.png`);
         acc.push(downloadImage(card.card_image, path.join("/")));
         return acc;
       }, [])
@@ -59,7 +76,14 @@ const processCards = async (chunks, results, remaining, ffgXwsMap, missing) => {
   results.push(curr);
 
   return curr !== undefined && remaining.length
-    ? processCards(getChunks(remaining), results, remaining, ffgXwsMap, missing)
+    ? processCards(
+        getChunks(remaining),
+        results,
+        remaining,
+        ffgXwsMap,
+        missing,
+        processed
+      )
     : results;
 };
 
@@ -69,7 +93,14 @@ async function start() {
   const downloads = [];
   const missing = [];
 
-  await processCards(getChunks(cards), downloads, cards, ffgXwsMap, missing);
+  await processCards(
+    getChunks(cards),
+    downloads,
+    cards,
+    ffgXwsMap,
+    missing,
+    []
+  );
 
   await Promise.all(downloads);
   const flattenedDownloads = [].concat(...downloads);
